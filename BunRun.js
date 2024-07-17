@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+Javascript document.addEventListener('DOMContentLoaded', () => {
     const db = firebase.firestore();
 
     const orderForm = document.getElementById('orderForm');
