@@ -1,3 +1,4 @@
+// JavaScript Document
 Javascript document.addEventListener('DOMContentLoaded', () => {
     const db = firebase.firestore();
 
