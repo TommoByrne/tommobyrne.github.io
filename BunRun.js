@@ -1,20 +1,48 @@
-// JavaScript Document
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
+    const db = firebase.firestore();
+
     const orderForm = document.getElementById('orderForm');
     const foodList = document.getElementById('foodList');
 
-    orderForm.addEventListener('submit', function (event) {
+    // Load orders from Firestore
+    function loadOrders() {
+        db.collection('orders').onSnapshot((snapshot) => {
+            foodList.innerHTML = ''; // Clear the list
+            snapshot.forEach((doc) => {
+                const order = doc.data();
+                addFoodItem(order.foodItem, order.quantity, doc.id);
+            });
+        });
+    }
+
+    // Save a new order to Firestore
+    orderForm.addEventListener('submit', (event) => {
         event.preventDefault();
 
         const foodItem = document.getElementById('foodItem').value;
         const quantity = document.getElementById('quantity').value;
 
-        addFoodItem(foodItem, quantity);
+        db.collection('orders').add({
+            foodItem,
+            quantity
+        });
 
         orderForm.reset();
     });
 
-    function addFoodItem(foodItem, quantity) {
+    // Update an order in Firestore
+    function updateOrder(id, quantity) {
+        db.collection('orders').doc(id).update({
+            quantity
+        });
+    }
+
+    // Delete an order from Firestore
+    function deleteOrder(id) {
+        db.collection('orders').doc(id).delete();
+    }
+
+    function addFoodItem(foodItem, quantity, id) {
         const li = document.createElement('li');
 
         const itemSpan = document.createElement('span');
@@ -24,16 +52,17 @@ document.addEventListener('DOMContentLoaded', function () {
         quantityInput.type = 'number';
         quantityInput.value = quantity;
         quantityInput.min = 1;
-        quantityInput.addEventListener('change', function () {
+        quantityInput.addEventListener('change', () => {
             if (quantityInput.value < 1) {
                 quantityInput.value = 1;
             }
+            updateOrder(id, quantityInput.value);
         });
 
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Remove';
-        deleteButton.addEventListener('click', function () {
-            foodList.removeChild(li);
+        deleteButton.addEventListener('click', () => {
+            deleteOrder(id);
         });
 
         li.appendChild(itemSpan);
@@ -41,4 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
         li.appendChild(deleteButton);
         foodList.appendChild(li);
     }
-});// JavaScript Document
+
+    loadOrders();
+});
